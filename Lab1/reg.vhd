@@ -12,3 +12,19 @@ entity reg is
     );
 end entity reg;
 
+architecture behavioral of reg is
+	signal reg_data : std_logic_vector(width-1 downto 0);
+begin
+	process(clk, resetn)
+	begin
+		if resetn = '0' then
+			reg_data <= (OTHERS => '0');
+		elsif rising_edge(clk) then
+			if loadEnable = '1' then
+				reg_data <= dataIn;
+			end if;
+		end if;
+	end process;
+
+	dataOut <= reg_data;
+end behavioral;
