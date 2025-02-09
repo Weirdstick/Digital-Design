@@ -14,3 +14,15 @@ entity proc_bus is
         busOut     : out std_logic_vector(7 downto 0)
     );
 end proc_bus;
+
+
+architecture behavioral of proc_bus is
+begin
+			----------- One-shot busSel to ensure that only one input drives the bus
+	busOut <= 	imDataOut when busSel(0) = '1' else 
+			dmDataOut when busSel(1) = '1' else
+			accOut 	  when busSel(2) = '1' else
+			extIn     when busSel(3) = '1' else
+			(OTHERS => 'Z');
+end behavioral;
+ 
