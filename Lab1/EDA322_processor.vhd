@@ -22,7 +22,7 @@ end EDA322_processor;
 
 architecture structural of EDA322_processor is
     -- internal signals
-    signal pcIncrOut, jumpAddr, nextPC, pcOut : std_logic_vector(7 downto 0);
+    signal pcIncrOut, jumpAddr, nextPC, pcOut, accResult, accSource : std_logic_vector(7 downto 0);
     signal busSel : std_logic_vector(3 downto 0);
     signal busOut, aluOut, dmDataOut, accOut : std_logic_vector(7 downto 0);
     signal imDataOut : std_logic_vector(11 downto 0);
@@ -70,6 +70,29 @@ begin
            dataOut    => pcOut
        );
 
+    -- ACC Reg
+    ACC_REG : entity work.reg
+       generic map ( WIDTH => 8 )
+       port map (
+           clk        => clk,
+           resetn     => resetn,
+           loadEnable => accLd,
+           dataIn     => accResult,
+           dataOut    => accOut
+       );
+
+     -- DC Reg
+     DC_REG : entity work.reg
+       generic map ( WIDTH => 8 )
+       port map (
+           clk        => clk,
+           resetn     => resetn,
+           loadEnable => dsLd,
+           dataIn     => accOut,
+           dataOut    => ds2seg
+       );
+
+
     pcIncrOut <= std_logic_vector(unsigned(pcOut) + 1);
 
     -- block for offset
@@ -84,6 +107,51 @@ begin
 
     -- Mux for nextPC
     nextPC <= pcIncrOut when pcSel = '0' else jumpAddr;
+    
+    --- Mux for acc
+    accSource <= aluOut when accSel = '0' else busOut;
+
+    ALU_UNIT : entity work.alu_wRCA
+	port map(
+		alu_inA 	 => busOut, 
+		alu_inB 	 => accOut,
+       		alu_op           => aluOp,
+        	alu_out          => aluOut,
+       		C                => c_flag,
+        	E                => e_flag,
+       		Z                => z_flag
+	);
+
+    E_FLAG : entity work.reg
+	generic map ( WIDTH => 1 )
+	port map (
+	   clk        => clk,
+           resetn     => resetn,
+           loadEnable => flagLd,
+           dataIn     => e_flag,
+           dataOut    => ds2seg ---- =============================== FIX FIX FIX ===========================
+	);
+
+     
+    C_FLAG : entity work.reg
+	generic map ( WIDTH => 1 )
+	port map (
+	   clk        => clk,
+           resetn     => resetn,
+           loadEnable => flagLd,
+           dataIn     => c_flag,
+           dataOut    => ds2seg ---- =============================== FIX FIX FIX ===========================
+	);
+
+    Z_FLAG : entity work.reg
+	generic map ( WIDTH => 1 )
+	port map (
+	   clk        => clk,
+           resetn     => resetn,
+           loadEnable => flagLd,
+           dataIn     => z_flag,
+           dataOut    => ds2seg ---- =============================== FIX FIX FIX ===========================
+	);
 
     BUS_UNIT : entity work.proc_bus
        port map (
