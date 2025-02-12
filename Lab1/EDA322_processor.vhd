@@ -28,7 +28,7 @@ architecture structural of EDA322_processor is
     signal imDataOut : std_logic_vector(11 downto 0);
     signal imRead, dmRead, dmWrite, pcSel, pcLd, accSel, accLd, flagLd, dsLd : std_logic;
     signal aluOp : std_logic_vector(1 downto 0);
-    signal e_flag, c_flag, z_flag : std_logic;
+    signal e_flag, c_flag, z_flag : std_logic_vector(0 downto 0);
 begin
 
     -- Instruction memory 
@@ -117,12 +117,12 @@ begin
 		alu_inB 	 => accOut,
        		alu_op           => aluOp,
         	alu_out          => aluOut,
-       		C                => c_flag,
-        	E                => e_flag,
-       		Z                => z_flag
+       		C                => c_flag(0),
+        	E                => e_flag(0),
+       		Z                => z_flag(0)
 	);
 
-    E_FLAG : entity work.reg
+    EQUAL_FLAG : entity work.reg
 	generic map ( WIDTH => 1 )
 	port map (
 	   clk        => clk,
@@ -133,7 +133,7 @@ begin
 	);
 
      
-    C_FLAG : entity work.reg
+    CARRY_FLAG : entity work.reg
 	generic map ( WIDTH => 1 )
 	port map (
 	   clk        => clk,
@@ -143,7 +143,7 @@ begin
            dataOut    => ds2seg ---- =============================== FIX FIX FIX ===========================
 	);
 
-    Z_FLAG : entity work.reg
+    ZERO_FLAG : entity work.reg
 	generic map ( WIDTH => 1 )
 	port map (
 	   clk        => clk,
